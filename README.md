@@ -3,7 +3,7 @@ standard modbus-rtu，use rs-485 bus，simple ，already used in engineering。
 
 modbus-rtu协议 基于rs485 已工程化
 
-#使用
+# 使用
 
 调用初始化注册接收和发送函数
 ```c
