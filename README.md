@@ -1,7 +1,7 @@
 # modbus-rtu
 standard modbus-rtu，use rs-485 bus，simple ，already used in engineering。
 
-modbus-rtu协议 基于rs485 已工程化
+modbus-rtu协议 基于rs485 已工程化 部分osDelay(),osKernelLock()函数是rtx v2的系统函数 根据需要添加或删除，在发送时需要关闭rtos的调度保证数据连续性。
 
 # 使用
 
@@ -29,7 +29,7 @@ void rs485_send_data(const u8 *string, u8 len) {
   rs485_rcv_mode();
 }
 ```
-以下是接收一个字节到modbus_data内到中断
+以下是接收modbus_data中断
 ```c
 /**
  * @brief  USART1中断 Modbus协议
@@ -38,9 +38,11 @@ void rs485_send_data(const u8 *string, u8 len) {
  */
 void USART1_IRQHandler(void) {
   u16 recv_byte = 0;
-  modbus_data *p;
-  if (USART_GetITStatus(RS485_USARTx, USART_IT_RXNE) != RESET) {
-    p = get_modbus();
+	if (USART_GetITStatus(RS485_USARTx, USART_IT_RXNE) == RESET) {
+    return;
+  }
+	modbus_data *p = get_modbus();
+  while (USART_GetITStatus(RS485_USARTx, USART_IT_RXNE) != RESET) {
     recv_byte = USART_ReceiveData(RS485_USARTx); // 将接收的一个字节保存
     p->buff[p->len++] = recv_byte;               // 保存到MODBUS的接收缓存区
   }
